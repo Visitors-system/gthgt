@@ -11,9 +11,9 @@
     "lint": "eslint . --ext .ts",
     "test": "jest",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate": "DATABASE_URL=\"postgresql://admin:password@localhost:5432/tetra_dev?schema=public\" prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:seed": "DATABASE_URL=\"postgresql://admin:password@localhost:5432/tetra_dev?schema=public\" tsx ../../prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.10.2",
@@ -41,6 +41,7 @@
     "@types/node-cron": "^3.0.11",
     "@types/pdfkit": "^0.13.4",
     "@types/qrcode": "^1.5.5",
+    "dotenv-cli": "^7.4.2",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",

@@ -1,5 +1,5 @@
 // prisma/seed.ts
-import { PrismaClient, Role, TeamSpecialization } from '../src/backend/node_modules/@prisma/client';
+import { PrismaClient, Role, TeamSpecialization } from '../src/backend/node_modules/.prisma/client';
 import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -14,10 +14,19 @@ async function main() {
 
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@example.com' },
-    update: {},
+    update: {
+      firstName: 'Admin',
+      lastName: 'User',
+      phone: '555-0000',
+      isActive: true,
+    },
     create: {
       username: 'admin',
       email: 'admin@example.com',
+      firstName: 'Admin',
+      lastName: 'User',
+      phone: '555-0000',
+      isActive: true,
       passwordHash: adminPasswordHash,
       role: Role.ADMIN,
       preferences: { theme: 'dark' },
@@ -25,17 +34,26 @@ async function main() {
       permissions: { "manage_all": true }
     },
   });
-  console.log(`Created admin user: ${adminUser.email}`);
+  console.log(`Created/Updated admin user: ${adminUser.email}`);
 
   // Create a default Technician User
   const techPassword = 'password';
   const techPasswordHash = await bcrypt.hash(techPassword, saltRounds);
   const techUser = await prisma.user.upsert({
     where: { email: 'technician@example.com'},
-    update: {},
+    update: {
+      firstName: 'Technician',
+      lastName: 'User',
+      phone: '555-0111',
+      isActive: true,
+    },
     create: {
       username: 'technician',
       email: 'technician@example.com',
+      firstName: 'Technician',
+      lastName: 'User',
+      phone: '555-0111',
+      isActive: true,
       passwordHash: techPasswordHash,
       role: Role.TECHNICIAN,
       preferences: { theme: 'light' },
@@ -43,8 +61,7 @@ async function main() {
       permissions: { "view_devices": true, "edit_own_tasks": true }
     }
   });
-  console.log(`Created technician user: ${techUser.email}`);
-
+  console.log(`Created/Updated technician user: ${techUser.email}`);
 
   // Create a sample Team
   const towerTeam = await prisma.team.upsert({
@@ -84,11 +101,11 @@ async function main() {
     where: { id: techUser.id },
     data: {
       teamMemberships: {
-        push: [{ teamId: towerTeam.id, teamName: towerTeam.name, role_in_team: "member" }]
+        set: [{ teamId: towerTeam.id, teamName: towerTeam.name, role_in_team: "member" }]
       }
     }
   });
-  console.log(`Added ${techUser.username} to ${towerTeam.name}`);
+  console.log(`Updated ${techUser.username} team membership to ${towerTeam.name}`);
 
 
   // Create a sample Site

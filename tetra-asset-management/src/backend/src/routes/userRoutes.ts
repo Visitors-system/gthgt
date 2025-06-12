@@ -1,14 +1,17 @@
+// src/backend/src/routes/userRoutes.ts
 import { Router } from 'express';
 import * as userController from '../controllers/userController';
-// import { authMiddleware } from '../middleware/authMiddleware'; // Placeholder
+// import { authMiddleware, checkRole } from '../middleware/authMiddleware'; // Placeholder for auth
 
 const router = Router();
 
-// Apply auth middleware to all user routes if needed, or per route
+// Example: Protect all user routes
 // router.use(authMiddleware);
 
 router.get('/', userController.getUsers);
+router.post('/', /* checkRole(['ADMIN']), */ userController.createUserController); // Example role check
 router.get('/:id', userController.getUser);
-// Add other routes (POST, PUT, DELETE) later
+router.put('/:id', /* checkRole(['ADMIN']), */ userController.updateUserController);
+router.delete('/:id', /* checkRole(['ADMIN']), */ userController.deleteUserController);
 
 export default router;

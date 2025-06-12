@@ -49,8 +49,12 @@ model User {
   id                String    @id @default(cuid())
   username          String    @unique
   email             String    @unique
+  firstName         String?
+  lastName          String?
+  phone             String?   @unique
   passwordHash      String
   role              Role      @default(TECHNICIAN)
+  isActive          Boolean   @default(true)
   teamMemberships   Json?     // Example: [{ "teamId": "uuid", "role_in_team": "member" }]
   permissions       Json?     // Example: { "can_edit_devices": true, "can_view_reports": true }
   preferences       Json?     // Example: { "theme": "dark", "notifications": { "email": true, "sms": false } }

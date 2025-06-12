@@ -1,13 +1,16 @@
+// src/frontend/src/components/users/UserList.tsx
 import React from 'react';
-import { User } from '../../services/userService'; // Import the User type
+import { User } from '../../services/userService';
 
 interface UserListProps {
   users: User[];
   isLoading: boolean;
   error: Error | null;
+  onEdit: (user: User) => void;
+  onDelete: (userId: string) => void;
 }
 
-const UserList: React.FC<UserListProps> = ({ users, isLoading, error }) => {
+const UserList: React.FC<UserListProps> = ({ users, isLoading, error, onEdit, onDelete }) => {
   if (isLoading) {
     return <p className="text-center text-gray-500">Loading users...</p>;
   }
@@ -27,8 +30,10 @@ const UserList: React.FC<UserListProps> = ({ users, isLoading, error }) => {
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -36,8 +41,27 @@ const UserList: React.FC<UserListProps> = ({ users, isLoading, error }) => {
             <tr key={user.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.username}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.firstName || ''} {user.lastName || ''}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.role}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(user.createdAt).toLocaleDateString()}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  {user.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button
+                  onClick={() => onEdit(user)}
+                  className="text-indigo-600 hover:text-indigo-900 mr-3"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => onDelete(user.id)}
+                  className="text-red-600 hover:text-red-900"
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
