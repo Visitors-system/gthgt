@@ -1,0 +1,240 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/backend/node_modules/.prisma/client" // Adjusted output path for monorepo
+}
+
+// ENUMERATIONS (Examples - to be expanded later)
+enum Role {
+  ADMIN
+  SUPERVISOR
+  TECHNICIAN
+  VISITOR
+  OPERATOR // Added based on project description for team types
+}
+
+enum TeamSpecialization {
+  TOWER_CLIMBING
+  CONFIGURATION
+  ORGANIZATIONAL_ORG
+  ORGANIZATIONAL_RGO
+  ORGANIZATIONAL_ISS
+  ORGANIZATIONAL_RCA
+  ORGANIZATIONAL_SAF
+  MAINTENANCE
+  INSTALLATION
+  NETWORK_OPS
+  OTHER
+}
+
+enum AssetStatus {
+  IN_WAREHOUSE
+  DEPLOYED
+  IN_TRANSIT
+  UNDER_MAINTENANCE
+  RESERVED
+  DISPOSED
+  LOST_STOLEN
+}
+
+// MODELS
+
+model User {
+  id                String    @id @default(cuid())
+  username          String    @unique
+  email             String    @unique
+  passwordHash      String
+  role              Role      @default(TECHNICIAN)
+  teamMemberships   Json?     // Example: [{ "teamId": "uuid", "role_in_team": "member" }]
+  permissions       Json?     // Example: { "can_edit_devices": true, "can_view_reports": true }
+  preferences       Json?     // Example: { "theme": "dark", "notifications": { "email": true, "sms": false } }
+  lastLogin         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  createdSites      Site[]          @relation("CreatedBySites")
+  updatedSites      Site[]          @relation("UpdatedBySites")
+  createdTeams      Team[]          @relation("CreatedByTeams")
+  updatedTeams      Team[]          @relation("UpdatedByTeams")
+  siteAccessLogs    SiteAccess[]
+  createdAlerts     Alert[]         @relation("CreatedByAlerts")
+  acknowledgedAlerts Alert[]        @relation("AcknowledgedByAlerts")
+  createdConfigs    Configuration[] @relation("CreatedByConfigs")
+  createdBackups    Backup[]        @relation("CreatedByBackups")
+  reportedIncidents Incident[]      @relation("ReportedByIncidents")
+  assignedIncidents Incident[]      @relation("AssignedToIncidents")
+  createdKnowledge  KnowledgeBase[] @relation("CreatedByKnowledge")
+  updatedKnowledge  KnowledgeBase[] @relation("UpdatedByKnowledge")
+  createdWorkOrders WorkOrder[]     @relation("CreatedByWorkOrders")
+  assignedWorkOrders WorkOrder[]    @relation("AssignedToWorkOrders")
+  movedAssets       AssetMovement[] @relation("MovedByAssetMovements")
+  inventoryAudits   InventoryAudit[] @relation("AuditedByInventoryAudits")
+  signalMeasurements SignalMeasurement[] @relation("MeasuredBySignalMeasurements")
+  interferenceReports InterferenceReport[] @relation("ReportedByInterferenceReports")
+  assignedIpAddresses IPAddress[]   @relation("AssignedByIPAddresses")
+
+
+  @@map("users")
+}
+
+model Team {
+  id                  String              @id @default(cuid())
+  name                String              @unique
+  teamType            TeamSpecialization  @default(OTHER) // Changed to use the enum
+  organization        String?             // e.g., "Network Operations", "Field Maintenance"
+  members             Json?               // Example: [{ "userId": "uuid", "role": "lead", "skills": ["RF", "IP"] }]
+  certifications      Json?               // Example: [{ "name": "Tower Climbing Cert", "expiry": "YYYY-MM-DD" }]
+  availabilitySchedule Json?              // Example: { "monday": "08:00-17:00", "tuesday": "OFF" }
+  skillMatrix         Json?               // Example: { "RF_tuning": "expert", "IP_config": "intermediate" }
+  contactInfo         Json?               // Example: { "primary_phone": "...", "secondary_email": "..." }
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  createdById         String?
+  updatedById         String?
+
+  createdBy           User?               @relation("CreatedByTeams", fields: [createdById], references: [id])
+  updatedBy           User?               @relation("UpdatedByTeams", fields: [updatedById], references: [id])
+
+  // Relations (Examples - to be expanded based on full schema)
+  // teamSchedules    TeamSchedule[]      // If TeamSchedule links directly to multiple teams
+  // maintenanceRecords MaintenanceRecord[] // If a team is directly assigned
+  // workOrders       WorkOrder[]         // If a team is directly assigned to a work order
+  // complianceChecks   Compliance[]        // If a team is responsible for compliance checks
+
+  @@map("teams")
+}
+
+
+// --- Placeholder for other 29 tables from the issue ---
+// --- Will be defined in subsequent steps or a larger subtask ---
+
+// Example of a table related to User and Team (Site) to show basic relations
+model Site {
+  id            String    @id @default(cuid())
+  name          String    @unique
+  address       String?
+  // ... other Site fields from specification
+  createdById   String?
+  updatedById   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  createdBy     User?     @relation("CreatedBySites", fields: [createdById], references: [id])
+  updatedBy     User?     @relation("UpdatedBySites", fields: [updatedById], references: [id])
+  // teams         Team[]    // If a site can have multiple teams assigned or vice-versa (many-to-many or one-to-many)
+
+  @@map("sites")
+}
+
+// These tables are just illustrative for relations and will be fully defined later.
+model Alert {
+  id String @id @default(cuid())
+  // ... other fields
+  createdById String?
+  acknowledgedById String?
+  createdBy User? @relation("CreatedByAlerts", fields: [createdById], references: [id])
+  acknowledgedBy User? @relation("AcknowledgedByAlerts", fields: [acknowledgedById], references: [id])
+  @@map("alerts")
+}
+
+model Configuration {
+  id String @id @default(cuid())
+  // ... other fields
+  createdById String?
+  createdBy User? @relation("CreatedByConfigs", fields: [createdById], references: [id])
+  @@map("configurations")
+}
+
+model Backup {
+  id String @id @default(cuid())
+  // ... other fields
+  createdById String?
+  createdBy User? @relation("CreatedByBackups", fields: [createdById], references: [id])
+  @@map("backups")
+}
+
+model Incident {
+  id String @id @default(cuid())
+  // ... other fields
+  reportedById String?
+  assignedToId String?
+  reportedBy User? @relation("ReportedByIncidents", fields: [reportedById], references: [id])
+  assignedTo User? @relation("AssignedToIncidents", fields: [assignedToId], references: [id])
+  @@map("incidents")
+}
+
+model KnowledgeBase {
+  id String @id @default(cuid())
+  // ... other fields
+  createdById String?
+  updatedById String?
+  createdBy User? @relation("CreatedByKnowledge", fields: [createdById], references: [id])
+  updatedBy User? @relation("UpdatedByKnowledge", fields: [updatedById], references: [id])
+  @@map("knowledge_base")
+}
+
+model WorkOrder {
+  id String @id @default(cuid())
+  // ... other fields
+  createdById String?
+  assignedToId String?
+  createdBy User? @relation("CreatedByWorkOrders", fields: [createdById], references: [id])
+  assignedTo User? @relation("AssignedToWorkOrders", fields: [assignedToId], references: [id])
+  @@map("work_orders")
+}
+
+model SiteAccess {
+  id String @id @default(cuid())
+  userId String?
+  user User? @relation(fields: [userId], references: [id])
+  // ... other fields
+  @@map("site_access")
+}
+
+model AssetMovement {
+  id String @id @default(cuid())
+  movedById String?
+  movedBy User? @relation("MovedByAssetMovements", fields: [movedById], references: [id])
+  // ... other fields
+  @@map("asset_movements")
+}
+
+model InventoryAudit {
+  id String @id @default(cuid())
+  auditedById String?
+  auditedBy User? @relation("AuditedByInventoryAudits", fields: [auditedById], references: [id])
+  // ... other fields
+  @@map("inventory_audits")
+}
+
+model SignalMeasurement {
+  id String @id @default(cuid())
+  measuredById String?
+  measuredBy User? @relation("MeasuredBySignalMeasurements", fields: [measuredById], references: [id])
+  // ... other fields
+  @@map("signal_measurements")
+}
+
+model InterferenceReport {
+  id String @id @default(cuid())
+  reportedById String?
+  reportedBy User? @relation("ReportedByInterferenceReports", fields: [reportedById], references: [id])
+  // ... other fields
+  @@map("interference_reports")
+}
+
+model IPAddress {
+  id String @id @default(cuid())
+  assignedById String?
+  assignedBy User? @relation("AssignedByIPAddresses", fields: [assignedById], references: [id])
+  // ... other fields
+  @@map("ip_addresses")
+}
