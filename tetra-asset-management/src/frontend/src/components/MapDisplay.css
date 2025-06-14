@@ -1,0 +1,15 @@
+/* src/frontend/src/components/MapDisplay.css */
+
+.map-container-class { /* Example class if you prefer to use classes over inline styles */
+  height: 500px;
+  width: 100%;
+  border: 1px solid #ccc; /* Example border */
+}
+
+/* You can add more specific leaflet customization here if needed, for example: */
+/*
+.leaflet-popup-content-wrapper {
+  background-color: #f8f8f8;
+  color: #333;
+}
+*/

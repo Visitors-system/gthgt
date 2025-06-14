@@ -45,5 +45,36 @@ services:
       - /usr/src/app/node_modules # Mount node_modules separately to avoid overriding
     command: npm run dev
 
+  tile-server:
+    image: maptiler/tileserver-gl:v4.5.1
+    ports:
+      - "8081:8080" # Host port 8081 to container port 8080
+    volumes:
+      - ./offline_map_data:/data # Mount local offline_map_data to /data in container
+    # Users need to place their .mbtiles files (e.g., mymap.mbtiles) into the
+    # ./offline_map_data directory in the project root.
+    # This directory is not created by default and must be created by the user.
+    #
+    # The tileserver-gl will serve tiles from the .mbtiles files found in /data.
+    # For example, if you have offline_map_data/ocean.mbtiles, tileserver-gl might serve it at:
+    # http://localhost:8081/data/ocean/{z}/{x}/{y}.png
+    # or via a style like http://localhost:8081/styles/basic-preview/ (if default styles are used or configured)
+    #
+    # The frontend MapDisplay.tsx is currently configured to fetch tiles from a relative path:
+    # '/map-tiles/{z}/{x}/{y}.png'.
+    # To make this work with this tile-server, a reverse proxy (e.g., Nginx, or Vite's dev proxy)
+    # would be needed to route requests from (e.g.) http://localhost:3000/map-tiles/
+    # to the tile server, e.g., http://localhost:8081/data/your_mbtiles_filename/{z}/{x}/{y}.png
+    # This might involve path rewriting.
+    #
+    # For production, this tile-server service should be properly configured and
+    # potentially fronted by a reverse proxy like Nginx for SSL and routing.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s # Give some time for the server to start and load mbtiles
+
 volumes:
   postgres_data:

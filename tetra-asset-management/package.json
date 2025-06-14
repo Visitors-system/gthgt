@@ -16,10 +16,10 @@
     "prisma:studio": "cd src/backend && npx prisma studio"
   },
   "devDependencies": {
-    "prisma": "^5.22.0",
+    "prisma": "^6.9.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0"
+    "@prisma/client": "^6.9.0"
   }
 }

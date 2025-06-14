@@ -43,6 +43,13 @@ enum AssetStatus {
   LOST_STOLEN
 }
 
+enum AssetType {
+  RADIO
+  VEHICLE
+  SENSOR
+  OTHER
+}
+
 // MODELS
 
 model User {
@@ -63,6 +70,7 @@ model User {
   updatedAt         DateTime  @updatedAt
 
   // Relations
+  assignedAssets    Asset[]         @relation("UserAssets")
   createdSites      Site[]          @relation("CreatedBySites")
   updatedSites      Site[]          @relation("UpdatedBySites")
   createdTeams      Team[]          @relation("CreatedByTeams")
@@ -126,6 +134,8 @@ model Site {
   name          String    @unique
   address       String?
   // ... other Site fields from specification
+  latitude      Float?
+  longitude     Float?
   createdById   String?
   updatedById   String?
   createdAt     DateTime  @default(now())
@@ -133,9 +143,35 @@ model Site {
 
   createdBy     User?     @relation("CreatedBySites", fields: [createdById], references: [id])
   updatedBy     User?     @relation("UpdatedBySites", fields: [updatedById], references: [id])
+  assets        Asset[]   @relation("SiteAssets")
   // teams         Team[]    // If a site can have multiple teams assigned or vice-versa (many-to-many or one-to-many)
 
   @@map("sites")
+}
+
+model Asset {
+  id                   String      @id @default(cuid())
+  name                 String
+  type                 AssetType
+  status               AssetStatus
+  serialNumber         String?     @unique
+  modelNumber          String?
+  manufacturer         String?
+  purchaseDate         DateTime?
+  warrantyExpiryDate   DateTime?
+  assignedToUserId     String?
+  assignedToUser       User?       @relation("UserAssets", fields: [assignedToUserId], references: [id])
+  siteId               String?
+  site                 Site?       @relation("SiteAssets", fields: [siteId], references: [id])
+  latitude             Float?
+  longitude            Float?
+  locationLastUpdated  DateTime?
+  customFields         Json?
+  notes                String?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  @@map("assets")
 }
 
 // These tables are just illustrative for relations and will be fully defined later.

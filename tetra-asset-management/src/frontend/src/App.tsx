@@ -3,6 +3,7 @@ import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import UsersPage from './pages/UsersPage';
+import AssetMapPage from './pages/AssetMapPage'; // Import the new map page
 import { Toaster } from 'react-hot-toast'; // Import Toaster
 
 function Home() {
@@ -14,6 +15,7 @@ function Home() {
         <ul className="flex space-x-4 justify-center">
           <li><Link to="/" className="text-blue-500 hover:text-blue-700">Home</Link></li>
           <li><Link to="/users" className="text-blue-500 hover:text-blue-700">Users</Link></li>
+          <li><Link to="/asset-map" className="text-blue-500 hover:text-blue-700">Asset Map</Link></li>
         </ul>
       </nav>
     </div>
@@ -32,6 +34,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/users" element={<UsersPage />} />
+          <Route path="/asset-map" element={<AssetMapPage />} />
         </Routes>
       </main>
 
